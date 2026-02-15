@@ -96,14 +96,22 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { postId, engagement } = body;
 
+    const post = await prisma.post.findFirst({
+      where: { id: postId, userId: session.user.id },
+      select: { id: true },
+    });
+    if (!post) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    }
+
     const updated = await prisma.engagement.upsert({
-      where: { postId },
+      where: { postId: post.id },
       update: engagement,
-      create: { postId, ...engagement },
+      create: { postId: post.id, ...engagement },
     });
 
     return NextResponse.json({
-      message: `Updated engagement for post ${postId}`,
+      message: `Updated engagement for post ${post.id}`,
       engagement: updated,
     });
   } catch (error) {

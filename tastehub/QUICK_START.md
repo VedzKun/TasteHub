@@ -25,6 +25,28 @@ cd tastehub
 npm run dev
 ```
 
+### Step 2.5: Enable AI Model Inference (Required for `/analytics` AI insights)
+Your ML model lives in the sibling folder `../TasteHubAI`. Install its Python dependencies once:
+
+```bash
+cd ../TasteHubAI
+python3 -m pip install -r requirements.txt
+```
+
+Then run Next.js from the `tastehub` folder:
+
+```bash
+cd ../tastehub
+npm run dev
+```
+
+Optional env vars if your paths are custom:
+
+```bash
+TASTEHUB_AI_DIR=/absolute/path/to/TasteHubAI
+PYTHON_BIN=python3
+```
+
 ### Step 3: Test the Application
 
 1. **Visit the landing page**: [http://localhost:3000](http://localhost:3000)

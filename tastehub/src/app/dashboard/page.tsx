@@ -1,111 +1,84 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useMemo } from 'react';
 import Link from 'next/link';
-import { Post } from '@/types';
+import { usePosts } from '@/context/PostContext';
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [stats, setStats] = useState({
-    totalPosts: 0,
-    scheduled: 0,
-    published: 0,
-    drafts: 0,
-    totalEngagement: 0,
-    totalReach: 0,
-  });
+  const { posts, loading } = usePosts();
 
-  useEffect(() => {
-    fetchPosts();
-  }, []);
+  const stats = useMemo(() => {
+    const scheduled = posts.filter((p) => p.status === 'scheduled').length;
+    const published = posts.filter((p) => p.status === 'published').length;
+    const drafts = posts.filter((p) => p.status === 'draft').length;
 
-  const fetchPosts = async () => {
-    try {
-      const response = await fetch('/api/posts');
-      if (response.ok) {
-        const data = await response.json();
-        setPosts(data);
-        calculateStats(data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch posts:', error);
-    }
-  };
-
-  const calculateStats = (postsData: Post[]) => {
-    const scheduled = postsData.filter((p) => p.status === 'scheduled').length;
-    const published = postsData.filter((p) => p.status === 'published').length;
-    const drafts = postsData.filter((p) => p.status === 'draft').length;
-
-    const totalEngagement = postsData.reduce((sum, post) => {
+    const totalEngagement = posts.reduce((sum, post) => {
       if (post.engagement) {
         return sum + post.engagement.likes + post.engagement.comments + post.engagement.shares;
       }
       return sum;
     }, 0);
 
-    const totalReach = postsData.reduce((sum, post) => {
-      return sum + (post.engagement?.reach || 0);
-    }, 0);
+    const totalReach = posts.reduce((sum, post) => sum + (post.engagement?.reach || 0), 0);
 
-    setStats({ totalPosts: postsData.length, scheduled, published, drafts, totalEngagement, totalReach });
-  };
+    return {
+      totalPosts: posts.length,
+      scheduled,
+      published,
+      drafts,
+      totalEngagement,
+      totalReach,
+    };
+  }, [posts]);
 
   const recentPosts = posts.slice(0, 5);
 
   const getPlatformIcon = (platform: string) => {
     switch (platform) {
-      case 'instagram': return '📷';
-      case 'facebook': return '📘';
-      case 'twitter': return '🐦';
-      default: return '📱';
+      case 'instagram':
+        return '📷';
+      case 'facebook':
+        return '📘';
+      case 'twitter':
+        return '🐦';
+      default:
+        return '📱';
     }
   };
 
-  const getTimeAgo = (dateStr: string) => {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const hours = Math.floor(diff / 3600000);
-    if (hours < 1) return 'Just now';
-    if (hours < 24) return `${hours} hours ago`;
-    const days = Math.floor(hours / 24);
-    return `${days} days ago`;
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
   };
 
   return (
     <div className="space-y-8">
-      {/* Overview Cards */}
       <div>
         <h2 className="text-xl font-bold text-white mb-4">Overview</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Total Reach */}
           <div className="bg-[#111118] border border-[#2a2a3a] rounded-lg p-6 glow-cyan">
             <div className="flex items-center justify-between mb-4">
               <span className="text-gray-400 text-sm font-medium">Total Reach</span>
               <span className="text-2xl">📊</span>
             </div>
             <p className="text-3xl font-bold text-white font-mono">
-              {stats.totalReach >= 1000
-                ? `${(stats.totalReach / 1000).toFixed(1)}K`
-                : stats.totalReach}
+              {stats.totalReach >= 1000 ? `${(stats.totalReach / 1000).toFixed(1)}K` : stats.totalReach}
             </p>
-            <p className="text-[#00ff88] text-xs mt-2 neon-green">↑ 12% from last week</p>
+            <p className="text-[#00ff88] text-xs mt-2 neon-green">Across all tracked posts</p>
           </div>
 
-          {/* Engagement */}
           <div className="bg-[#111118] border border-[#2a2a3a] rounded-lg p-6 glow-cyan">
             <div className="flex items-center justify-between mb-4">
               <span className="text-gray-400 text-sm font-medium">Engagement</span>
               <span className="text-2xl">💬</span>
             </div>
-            <p className="text-3xl font-bold text-white font-mono">
-              {stats.totalEngagement.toLocaleString()}
-            </p>
-            <p className="text-[#00ff88] text-xs mt-2 neon-green">↑ 8% from last week</p>
+            <p className="text-3xl font-bold text-white font-mono">{stats.totalEngagement.toLocaleString()}</p>
+            <p className="text-[#00ff88] text-xs mt-2 neon-green">Likes + comments + shares</p>
           </div>
 
-          {/* Posts Scheduled */}
           <div className="bg-[#111118] border border-[#2a2a3a] rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-gray-400 text-sm font-medium">Posts Scheduled</span>
@@ -114,10 +87,9 @@ export default function DashboardPage() {
             <p className="text-3xl font-bold text-white font-mono">{stats.scheduled}</p>
           </div>
 
-          {/* Pending Posts */}
           <div className="bg-[#111118] border border-[#2a2a3a] rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-400 text-sm font-medium">Pending Posts</span>
+              <span className="text-gray-400 text-sm font-medium">Pending Drafts</span>
               <span className="text-2xl">⏳</span>
             </div>
             <p className="text-3xl font-bold text-[#ff00e5] font-mono neon-magenta">{stats.drafts}</p>
@@ -125,7 +97,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Recent Activity */}
       <div className="bg-[#111118] border border-[#2a2a3a] rounded-lg p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-white">Recent Activity</h2>
@@ -134,7 +105,11 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {recentPosts.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-10">
+            <p className="text-gray-500">Loading posts...</p>
+          </div>
+        ) : recentPosts.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 mb-4">No posts yet</p>
             <Link
@@ -158,21 +133,21 @@ export default function DashboardPage() {
                   <div>
                     <p className="text-white font-medium capitalize">{post.platform}</p>
                     <p className="text-gray-500 text-sm">
-                      {post.status === 'published' ? 'Post published' :
-                       post.status === 'scheduled' ? 'Post scheduled' : 'Draft saved'}
+                      {post.status === 'published'
+                        ? 'Post published'
+                        : post.status === 'scheduled'
+                          ? 'Post scheduled'
+                          : 'Draft saved'}
                     </p>
                   </div>
                 </div>
-                <span className="text-gray-500 text-sm font-mono">
-                  {getTimeAgo(post.createdAt || post.date)}
-                </span>
+                <span className="text-gray-500 text-sm font-mono">{formatDate(post.createdAt || post.date)}</span>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Platform Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-[#111118] border border-[#2a2a3a] rounded-lg p-6 hover:border-pink-500/40 transition-colors">
           <div className="text-3xl mb-3">📸</div>

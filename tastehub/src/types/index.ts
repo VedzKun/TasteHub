@@ -8,6 +8,7 @@ export interface Post {
   date: string; // ISO date string
   status: 'draft' | 'scheduled' | 'published';
   engagement?: Engagement;
+  topComments?: TopComment[];
   createdAt: string;
 }
 
@@ -16,6 +17,41 @@ export interface Engagement {
   comments: number;
   shares: number;
   reach: number;
+}
+
+export interface TopComment {
+  id: string;
+  postId: string;
+  rank: number;
+  author?: string | null;
+  body: string;
+  likes: number;
+  sentiment?: string | null;
+}
+
+export interface MLInsight {
+  id: string;
+  userId: string;
+  postId: string | null;
+  inputLikes: number;
+  inputComments: number;
+  inputShares: number;
+  inputReach: number;
+  inputTopComments: string[];
+  summary: string;
+  actionItems: string[];
+  confidence?: number | null;
+  modelVersion?: string | null;
+  createdAt: string;
+  predictedEngagementRate?: number | null;
+  predictedEngagementPercent?: number | null;
+  modelProvider?: 'python-model' | 'heuristic-fallback';
+  modelWarning?: string | null;
+  post?: {
+    id: string;
+    title: string;
+    platform: Platform;
+  } | null;
 }
 
 export interface PlatformStrategy {

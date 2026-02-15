@@ -1,6 +1,5 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 interface TopBarProps {
@@ -9,8 +8,6 @@ interface TopBarProps {
 }
 
 export default function TopBar({ title, subtitle }: TopBarProps) {
-  const { data: session } = useSession();
-
   return (
     <header className="h-20 border-b border-[#1e1e2e] bg-[#0d0d14] flex items-center justify-between px-8">
       <div>

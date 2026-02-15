@@ -18,6 +18,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'postId is required' }, { status: 400 });
     }
 
+    const post = await prisma.post.findFirst({
+      where: { id: postId, userId: session.user.id },
+      select: { id: true },
+    });
+    if (!post) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    }
+
     const comments = await prisma.topComment.findMany({
       where: { postId },
       orderBy: { rank: 'asc' },
@@ -46,6 +54,14 @@ export async function POST(request: NextRequest) {
         { error: 'postId and comments array are required' },
         { status: 400 }
       );
+    }
+
+    const post = await prisma.post.findFirst({
+      where: { id: postId, userId: session.user.id },
+      select: { id: true },
+    });
+    if (!post) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
     // Delete existing comments for this post, then recreate

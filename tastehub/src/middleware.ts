@@ -14,6 +14,8 @@ export async function middleware(request: NextRequest) {
 
   const isProtectedPage =
     request.nextUrl.pathname.startsWith('/dashboard') ||
+    request.nextUrl.pathname.startsWith('/calendar') ||
+    request.nextUrl.pathname.startsWith('/posts') ||
     request.nextUrl.pathname.startsWith('/add-post') ||
     request.nextUrl.pathname.startsWith('/analytics');
 
@@ -31,5 +33,13 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/add-post/:path*', '/analytics/:path*', '/login', '/signup'],
+  matcher: [
+    '/dashboard/:path*',
+    '/calendar/:path*',
+    '/posts/:path*',
+    '/add-post/:path*',
+    '/analytics/:path*',
+    '/login',
+    '/signup',
+  ],
 };

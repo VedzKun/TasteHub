@@ -7,13 +7,13 @@ import { useSession } from 'next-auth/react';
 interface PostContextType {
   posts: Post[];
   loading: boolean;
-  addPost: (post: Omit<Post, 'id' | 'createdAt'>) => void;
-  updatePost: (id: string, updates: Partial<Post>) => void;
-  deletePost: (id: string) => void;
-  updateEngagement: (id: string, engagement: Engagement) => void;
+  addPost: (post: Omit<Post, 'id' | 'createdAt'>) => Promise<void>;
+  updatePost: (id: string, updates: Partial<Post>) => Promise<void>;
+  deletePost: (id: string) => Promise<void>;
+  updateEngagement: (id: string, engagement: Engagement) => Promise<void>;
   getPostsByDate: (date: string) => Post[];
   getPostsByPlatform: (platform: string) => Post[];
-  refreshPosts: () => void;
+  refreshPosts: () => Promise<void>;
 }
 
 const PostContext = createContext<PostContextType | undefined>(undefined);

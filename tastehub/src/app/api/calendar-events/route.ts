@@ -81,7 +81,15 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Event id is required' }, { status: 400 });
     }
 
-    await prisma.calendarEvent.delete({ where: { id } });
+    const event = await prisma.calendarEvent.findFirst({
+      where: { id, userId: session.user.id },
+      select: { id: true },
+    });
+    if (!event) {
+      return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+    }
+
+    await prisma.calendarEvent.delete({ where: { id: event.id } });
 
     return NextResponse.json({ message: 'Event deleted' });
   } catch (error) {

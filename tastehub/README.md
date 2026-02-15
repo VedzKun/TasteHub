@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TasteHub - Social Media Calendar + AI Insights
 
-## Getting Started
+TasteHub is a Next.js app for planning 30-day social content across Instagram, Facebook, and Twitter, with analytics and model-driven engagement insights.
 
-First, run the development server:
+## Project Structure
+
+- `tastehub/` - Next.js frontend + backend API + Prisma
+- `TasteHubAI/` - trained model assets and Python inference script
+
+## Local Setup
+
+1. Install app dependencies:
+
+```bash
+cd tastehub
+npm install
+```
+
+2. Install AI model dependencies:
+
+```bash
+cd ../TasteHubAI
+python3 -m pip install -r requirements.txt
+```
+
+3. Run database migrations and seed:
+
+```bash
+cd ../tastehub
+npm run db:migrate
+npm run db:seed
+```
+
+4. Start the app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create `tastehub/.env.local`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=replace_with_secure_secret
+```
 
-## Learn More
+Optional (if your AI folder/python binary is custom):
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+TASTEHUB_AI_DIR=/absolute/path/to/TasteHubAI
+PYTHON_BIN=python3
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## AI Flow
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Frontend `Analytics` page calls `POST /api/ml-insights` with a selected post.
+- Backend derives model features from post metadata and runs `TasteHubAI/predict.py`.
+- Prediction and action items are stored in `MLInsight` and shown in the AI Insights panel.
+- If Python/model execution fails, backend returns a safe heuristic fallback instead of crashing.

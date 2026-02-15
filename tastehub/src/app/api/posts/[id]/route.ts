@@ -63,10 +63,18 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
 
+    const existing = await prisma.post.findFirst({
+      where: { id, userId: session.user.id },
+      select: { id: true },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    }
+
     // Separate engagement data from post data
     const { engagement, ...postData } = body;
 
-    const post = await prisma.post.update({
+    await prisma.post.update({
       where: { id },
       data: {
         ...(postData.title && { title: postData.title }),
@@ -126,6 +134,14 @@ export async function DELETE(
     }
 
     const { id } = await params;
+
+    const existing = await prisma.post.findFirst({
+      where: { id, userId: session.user.id },
+      select: { id: true },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    }
 
     await prisma.post.delete({ where: { id } });
 

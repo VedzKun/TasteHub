@@ -18,10 +18,10 @@ export default function PostForm() {
     status: 'draft' as 'draft' | 'scheduled' | 'published',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    addPost(formData);
-    router.push('/');
+    await addPost(formData);
+    router.push('/calendar');
   };
 
   const handleChange = (
@@ -152,7 +152,7 @@ export default function PostForm() {
             </button>
             <button
               type="button"
-              onClick={() => router.push('/')}
+              onClick={() => router.push('/calendar')}
               className="px-6 py-3 border border-[#2a2a3a] rounded-md text-gray-400 hover:border-gray-500 hover:text-white transition-all"
             >
               Cancel
