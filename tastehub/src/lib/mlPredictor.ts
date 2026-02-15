@@ -72,6 +72,13 @@ async function getFeatureOrder() {
   return cachedFeatureOrder;
 }
 
+function orderFeatures(featureOrder: string[], features: ModelFeatures) {
+  return featureOrder.reduce<Record<string, string | number>>((acc, key) => {
+    acc[key] = features[key as keyof ModelFeatures] as string | number;
+    return acc;
+  }, {});
+}
+
 function clamp(num: number, min: number, max: number) {
   return Math.min(max, Math.max(min, num));
 }
@@ -174,10 +181,8 @@ function heuristicPrediction(features: ModelFeatures) {
   return clamp(raw, 0.01, 0.18);
 }
 
-async function runPythonPrediction(features: ModelFeatures) {
-  const payload = JSON.stringify(features);
-
-  return await new Promise<{ prediction: number }>((resolve, reject) => {
+async function runPythonProcess(payload: string) {
+  return await new Promise<Record<string, unknown>>((resolve, reject) => {
     const proc = spawn(PYTHON_BIN, [PREDICT_SCRIPT], { cwd: AI_DIR });
 
     let stdout = '';
@@ -209,7 +214,11 @@ async function runPythonPrediction(features: ModelFeatures) {
 
       try {
         const parsed = JSON.parse(stdout);
-        resolve({ prediction: Number(parsed.prediction) });
+        if (typeof parsed === 'object' && parsed !== null) {
+          resolve(parsed as Record<string, unknown>);
+          return;
+        }
+        reject(new Error('Model output must be a JSON object.'));
       } catch (error) {
         reject(
           new Error(
@@ -222,6 +231,30 @@ async function runPythonPrediction(features: ModelFeatures) {
     proc.stdin.write(payload);
     proc.stdin.end();
   });
+}
+
+async function runPythonPrediction(features: ModelFeatures) {
+  const result = await runPythonProcess(JSON.stringify(features));
+  const prediction = Number(result.prediction);
+  if (!Number.isFinite(prediction)) {
+    throw new Error('Model output is missing a numeric prediction.');
+  }
+  return { prediction };
+}
+
+async function runPythonPredictionBatch(features: ModelFeatures[]) {
+  const result = await runPythonProcess(JSON.stringify(features));
+  const rawPredictions = result.predictions;
+  if (!Array.isArray(rawPredictions)) {
+    throw new Error('Model output is missing predictions array.');
+  }
+
+  const predictions = rawPredictions.map((value) => Number(value));
+  if (predictions.some((value) => !Number.isFinite(value))) {
+    throw new Error('Model output contains non-numeric predictions.');
+  }
+
+  return { predictions };
 }
 
 export function buildModelFeaturesFromPost(input: {
@@ -257,10 +290,7 @@ export function buildModelFeaturesFromPost(input: {
 
 export async function predictEngagementRate(features: ModelFeatures): Promise<PredictionResult> {
   const featureOrder = await getFeatureOrder();
-  const orderedFeatures = featureOrder.reduce<Record<string, string | number>>((acc, key) => {
-    acc[key] = features[key as keyof ModelFeatures] as string | number;
-    return acc;
-  }, {});
+  const orderedFeatures = orderFeatures(featureOrder, features);
 
   const castFeatures = orderedFeatures as unknown as ModelFeatures;
 
@@ -287,5 +317,49 @@ export async function predictEngagementRate(features: ModelFeatures): Promise<Pr
       warning: error instanceof Error ? error.message : 'Unknown model execution error',
       features: castFeatures,
     };
+  }
+}
+
+export async function predictEngagementRateBatch(
+  featuresList: ModelFeatures[]
+): Promise<PredictionResult[]> {
+  if (featuresList.length === 0) return [];
+
+  const featureOrder = await getFeatureOrder();
+  const orderedList = featuresList.map((features) =>
+    orderFeatures(featureOrder, features) as unknown as ModelFeatures
+  );
+
+  try {
+    const result = await runPythonPredictionBatch(orderedList);
+    return orderedList.map((features, index) => {
+      const rawPrediction = result.predictions[index];
+      const rate = normalizePrediction(rawPrediction);
+
+      return {
+        prediction: rawPrediction,
+        rate,
+        percent: Number((rate * 100).toFixed(2)),
+        provider: 'python-model' as const,
+        modelVersion: 'tastehub-engagement-rate-v1',
+        features,
+      };
+    });
+  } catch (error) {
+    const warning =
+      error instanceof Error ? error.message : 'Unknown model execution error';
+
+    return orderedList.map((features) => {
+      const fallback = heuristicPrediction(features);
+      return {
+        prediction: fallback,
+        rate: fallback,
+        percent: Number((fallback * 100).toFixed(2)),
+        provider: 'heuristic-fallback' as const,
+        modelVersion: 'heuristic-fallback-v1',
+        warning,
+        features,
+      };
+    });
   }
 }

@@ -8,6 +8,10 @@ import TopBar from './TopBar';
 const pageMeta: Record<string, { title: string; subtitle: string }> = {
   '/dashboard': { title: 'Dashboard', subtitle: 'Your content empire at a glance' },
   '/calendar': { title: 'Content Calendar', subtitle: 'Plan and visualize your social content strategy' },
+  '/generate-calendar': {
+    title: '30-Day Generator',
+    subtitle: 'Generate and score a complete social media calendar',
+  },
   '/posts': { title: 'Posts', subtitle: 'Manage all your scheduled and published content' },
   '/add-post': { title: 'Create Post', subtitle: 'Schedule content for your social media platforms' },
   '/analytics': { title: 'Analytics', subtitle: 'Track engagement and performance across platforms' },

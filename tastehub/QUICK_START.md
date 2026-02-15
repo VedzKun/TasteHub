@@ -68,6 +68,7 @@ PYTHON_BIN=python3
 
 4. **Navigate the app**:
    - **Dashboard** - Main overview
+   - **30-Day Plan** - Generate full social media calendar
    - **Calendar** - Content calendar
    - **Add Post** - Create new posts
    - **Analytics** - View performance

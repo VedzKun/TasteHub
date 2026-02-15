@@ -59,3 +59,16 @@ PYTHON_BIN=python3
 - Backend derives model features from post metadata and runs `TasteHubAI/predict.py`.
 - Prediction and action items are stored in `MLInsight` and shown in the AI Insights panel.
 - If Python/model execution fails, backend returns a safe heuristic fallback instead of crashing.
+
+## 30-Day Generator
+
+- Visit `/generate-calendar` after login.
+- Fill:
+  - company name
+  - project objective
+  - platforms
+  - requirement checkboxes
+- Click `Generate 30-Day Calendar`.
+- Use:
+  - `Export CSV` for download
+  - `Save All to Calendar/Posts` to persist generated rows through `POST /api/posts/bulk`.

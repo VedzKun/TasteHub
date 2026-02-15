@@ -54,6 +54,30 @@ export interface MLInsight {
   } | null;
 }
 
+export interface CalendarRequirements {
+  dailyThemes: boolean;
+  platformSpecific: boolean;
+  analytics: boolean;
+}
+
+export interface GeneratedCalendarItem {
+  day: number;
+  date: string;
+  theme: string;
+  platform: Platform;
+  postIdea: string;
+  captionDraft: string;
+  cta: string;
+  hashtags: string[];
+  recommendedTime: string;
+  metricFocus: string;
+  predictedEngagementRate: number;
+  predictedEngagementPercent: number;
+  modelProvider: 'python-model' | 'heuristic-fallback';
+  modelVersion: string;
+  modelWarning?: string | null;
+}
+
 export interface PlatformStrategy {
   platform: Platform;
   icon: string;

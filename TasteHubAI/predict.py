@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """TasteHub model inference entrypoint.
 
-Reads a single JSON object from stdin and returns a JSON prediction payload.
+Reads JSON from stdin and returns prediction payload(s).
+Supports either:
+- a single JSON object
+- an array of JSON objects (batch prediction)
 """
 
 from __future__ import annotations
@@ -28,15 +31,17 @@ NUMERIC_FEATURES = {
 }
 
 
-def read_stdin_json() -> dict[str, Any]:
+def read_stdin_json() -> dict[str, Any] | list[dict[str, Any]]:
     raw = sys.stdin.read().strip()
     if not raw:
         raise ValueError("Empty stdin payload.")
 
     parsed = json.loads(raw)
-    if not isinstance(parsed, dict):
-        raise ValueError("Payload must be a JSON object.")
-    return parsed
+    if isinstance(parsed, dict):
+        return parsed
+    if isinstance(parsed, list) and all(isinstance(item, dict) for item in parsed):
+        return parsed
+    raise ValueError("Payload must be a JSON object or an array of objects.")
 
 
 def normalize_input(payload: dict[str, Any], feature_order: list[str]) -> dict[str, Any]:
@@ -82,17 +87,32 @@ def main() -> int:
             raise ValueError(f"Invalid feature file: {features_path}")
 
         payload = read_stdin_json()
-        normalized = normalize_input(payload, required_features)
-
         model = joblib.load(model_path)
+
+        if isinstance(payload, list):
+            if len(payload) == 0:
+                raise ValueError("Batch payload cannot be empty.")
+
+            normalized_rows = [
+                normalize_input(row, required_features) for row in payload
+            ]
+            frame = pd.DataFrame(normalized_rows, columns=required_features)
+            predictions = [float(value) for value in model.predict(frame)]
+
+            result = {
+                "predictions": predictions,
+                "inputs": normalized_rows,
+                "count": len(predictions),
+                "model": MODEL_FILE,
+            }
+            print(json.dumps(result))
+            return 0
+
+        normalized = normalize_input(payload, required_features)
         frame = pd.DataFrame([normalized], columns=required_features)
         prediction = float(model.predict(frame)[0])
 
-        result = {
-            "prediction": prediction,
-            "input": normalized,
-            "model": MODEL_FILE,
-        }
+        result = {"prediction": prediction, "input": normalized, "model": MODEL_FILE}
         print(json.dumps(result))
         return 0
     except Exception as exc:  # noqa: BLE001 - return machine-readable error

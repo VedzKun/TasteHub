@@ -11,6 +11,7 @@ export default function Sidebar() {
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: '⊞' },
     { href: '/calendar', label: 'Calendar', icon: '⊟' },
+    { href: '/generate-calendar', label: '30-Day Plan', icon: '◎' },
     { href: '/posts', label: 'Posts', icon: '◫' },
     { href: '/add-post', label: 'Create Post', icon: '+' },
     { href: '/analytics', label: 'Analytics', icon: '◇' },
