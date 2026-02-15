@@ -1,94 +1,115 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Post, Engagement } from '@/types';
+import { useSession } from 'next-auth/react';
 
 interface PostContextType {
   posts: Post[];
+  loading: boolean;
   addPost: (post: Omit<Post, 'id' | 'createdAt'>) => void;
   updatePost: (id: string, updates: Partial<Post>) => void;
   deletePost: (id: string) => void;
   updateEngagement: (id: string, engagement: Engagement) => void;
   getPostsByDate: (date: string) => Post[];
   getPostsByPlatform: (platform: string) => Post[];
+  refreshPosts: () => void;
 }
 
 const PostContext = createContext<PostContextType | undefined>(undefined);
 
 export function PostProvider({ children }: { children: ReactNode }) {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { data: session } = useSession();
 
-  // Load posts from localStorage on mount
-  useEffect(() => {
-    const savedPosts = localStorage.getItem('tastehub-posts');
-    if (savedPosts) {
-      setPosts(JSON.parse(savedPosts));
-    } else {
-      // Add sample posts for demo
-      const samplePosts: Post[] = [
-        {
-          id: '1',
-          title: 'New Recipe Launch',
-          description: 'Introducing our new summer salad recipe! Fresh ingredients, amazing taste.',
-          platform: 'instagram',
-          date: new Date().toISOString().split('T')[0],
-          status: 'scheduled',
-          engagement: { likes: 245, comments: 32, shares: 18, reach: 1520 },
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          title: 'Customer Spotlight',
-          description: 'Thank you @foodlover123 for sharing your amazing creation with our products!',
-          platform: 'twitter',
-          date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-          status: 'scheduled',
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: '3',
-          title: 'Weekend Special Offer',
-          description: 'Get 20% off all premium ingredients this weekend! Use code TASTEHUB20 at checkout.',
-          platform: 'facebook',
-          date: new Date(Date.now() + 172800000).toISOString().split('T')[0],
-          status: 'draft',
-          createdAt: new Date().toISOString(),
-        },
-      ];
-      setPosts(samplePosts);
+  const fetchPosts = useCallback(async () => {
+    if (!session?.user) {
+      setPosts([]);
+      setLoading(false);
+      return;
     }
-  }, []);
-
-  // Save posts to localStorage whenever they change
-  useEffect(() => {
-    if (posts.length > 0) {
-      localStorage.setItem('tastehub-posts', JSON.stringify(posts));
+    try {
+      setLoading(true);
+      const res = await fetch('/api/posts');
+      if (res.ok) {
+        const data = await res.json();
+        setPosts(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch posts:', error);
+    } finally {
+      setLoading(false);
     }
-  }, [posts]);
+  }, [session?.user]);
 
-  const addPost = (post: Omit<Post, 'id' | 'createdAt'>) => {
-    const newPost: Post = {
-      ...post,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-    };
-    setPosts((prev) => [...prev, newPost]);
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
+
+  const addPost = async (post: Omit<Post, 'id' | 'createdAt'>) => {
+    try {
+      const res = await fetch('/api/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(post),
+      });
+      if (res.ok) {
+        const newPost = await res.json();
+        setPosts((prev) => [newPost, ...prev]);
+      }
+    } catch (error) {
+      console.error('Failed to add post:', error);
+    }
   };
 
-  const updatePost = (id: string, updates: Partial<Post>) => {
+  const updatePost = async (id: string, updates: Partial<Post>) => {
+    // Optimistic update
     setPosts((prev) =>
       prev.map((post) => (post.id === id ? { ...post, ...updates } : post))
     );
+    try {
+      await fetch(`/api/posts/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+    } catch (error) {
+      console.error('Failed to update post:', error);
+      fetchPosts(); // revert on error
+    }
   };
 
-  const deletePost = (id: string) => {
-    setPosts((prev) => prev.filter((post) => post.id !== id));
+  const deletePost = async (id: string) => {
+    // Optimistic delete
+    const prev = posts;
+    setPosts((p) => p.filter((post) => post.id !== id));
+    try {
+      const res = await fetch(`/api/posts/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        setPosts(prev); // revert
+      }
+    } catch (error) {
+      console.error('Failed to delete post:', error);
+      setPosts(prev); // revert
+    }
   };
 
-  const updateEngagement = (id: string, engagement: Engagement) => {
+  const updateEngagement = async (id: string, engagement: Engagement) => {
+    // Optimistic
     setPosts((prev) =>
       prev.map((post) => (post.id === id ? { ...post, engagement } : post))
     );
+    try {
+      await fetch(`/api/posts/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ engagement }),
+      });
+    } catch (error) {
+      console.error('Failed to update engagement:', error);
+      fetchPosts();
+    }
   };
 
   const getPostsByDate = (date: string) => {
@@ -103,12 +124,14 @@ export function PostProvider({ children }: { children: ReactNode }) {
     <PostContext.Provider
       value={{
         posts,
+        loading,
         addPost,
         updatePost,
         deletePost,
         updateEngagement,
         getPostsByDate,
         getPostsByPlatform,
+        refreshPosts: fetchPosts,
       }}
     >
       {children}

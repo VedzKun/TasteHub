@@ -1,16 +1,29 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f9fafb;
-  --foreground: #1f2937;
-  --primary: #f97316;
-  --primary-dark: #ea580c;
-  --secondary: #ec4899;
+  --background: #0a0a0f;
+  --foreground: #e0e0e0;
+  --surface: #111118;
+  --surface-2: #1a1a24;
+  --border: #2a2a3a;
+  --cyan: #00f0ff;
+  --magenta: #ff00e5;
+  --green: #00ff88;
+  --orange: #ff8800;
+  --yellow: #f5f518;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-neon-cyan: var(--cyan);
+  --color-neon-magenta: var(--magenta);
+  --color-neon-green: var(--green);
+  --color-neon-orange: var(--orange);
+  --color-neon-yellow: var(--yellow);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -21,29 +34,64 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - dark */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #111118;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c4c4c4;
+  background: #2a2a3a;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a3a3a3;
+  background: #3a3a4a;
+}
+
+/* Neon glow utilities */
+.neon-cyan {
+  text-shadow: 0 0 7px #00f0ff, 0 0 10px #00f0ff40;
+}
+
+.neon-magenta {
+  text-shadow: 0 0 7px #ff00e5, 0 0 10px #ff00e540;
+}
+
+.neon-green {
+  text-shadow: 0 0 7px #00ff88, 0 0 10px #00ff8840;
+}
+
+.glow-cyan {
+  box-shadow: 0 0 8px #00f0ff40, inset 0 0 8px #00f0ff10;
+}
+
+.glow-magenta {
+  box-shadow: 0 0 8px #ff00e540, inset 0 0 8px #ff00e510;
+}
+
+.glow-green {
+  box-shadow: 0 0 8px #00ff8840, inset 0 0 8px #00ff8810;
+}
+
+/* Dark input overrides */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+select option {
+  background: #111118;
+  color: #e0e0e0;
 }
 
 /* Smooth transitions */
 * {
-  transition-property: background-color, border-color, color, fill, stroke;
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }

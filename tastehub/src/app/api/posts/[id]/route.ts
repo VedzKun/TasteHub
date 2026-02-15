@@ -1,19 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// This would normally connect to a database
-// For demo, we'll just simulate the operations
+import prisma from '@/lib/db';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  
-  // In a real app, fetch from database
-  return NextResponse.json({
-    message: `Get post with ID: ${id}`,
-    note: 'Connect to database for actual implementation',
-  });
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const post = await prisma.post.findFirst({
+      where: { id, userId: session.user.id },
+      include: {
+        engagement: true,
+        topComments: { orderBy: { rank: 'asc' } },
+      },
+    });
+
+    if (!post) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      id: post.id,
+      title: post.title,
+      description: post.description,
+      platform: post.platform,
+      date: post.date,
+      status: post.status,
+      createdAt: post.createdAt.toISOString(),
+      engagement: post.engagement
+        ? {
+            likes: post.engagement.likes,
+            comments: post.engagement.comments,
+            shares: post.engagement.shares,
+            reach: post.engagement.reach,
+          }
+        : undefined,
+      topComments: post.topComments,
+    });
+  } catch (error) {
+    console.error('GET /api/posts/[id] error:', error);
+    return NextResponse.json({ error: 'Failed to fetch post' }, { status: 500 });
+  }
 }
 
 export async function PUT(
@@ -21,20 +55,63 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { id } = await params;
     const body = await request.json();
-    
-    // In a real app, update in database
-    return NextResponse.json({
-      message: `Updated post with ID: ${id}`,
-      data: body,
-      note: 'Connect to database for actual implementation',
+
+    // Separate engagement data from post data
+    const { engagement, ...postData } = body;
+
+    const post = await prisma.post.update({
+      where: { id },
+      data: {
+        ...(postData.title && { title: postData.title }),
+        ...(postData.description && { description: postData.description }),
+        ...(postData.platform && { platform: postData.platform }),
+        ...(postData.date && { date: postData.date }),
+        ...(postData.status && { status: postData.status }),
+      },
+      include: { engagement: true },
     });
-  } catch {
-    return NextResponse.json(
-      { error: 'Failed to update post' },
-      { status: 400 }
-    );
+
+    // Upsert engagement if provided
+    if (engagement) {
+      await prisma.engagement.upsert({
+        where: { postId: id },
+        update: engagement,
+        create: { postId: id, ...engagement },
+      });
+    }
+
+    const updated = await prisma.post.findUnique({
+      where: { id },
+      include: { engagement: true, topComments: { orderBy: { rank: 'asc' } } },
+    });
+
+    return NextResponse.json({
+      id: updated!.id,
+      title: updated!.title,
+      description: updated!.description,
+      platform: updated!.platform,
+      date: updated!.date,
+      status: updated!.status,
+      createdAt: updated!.createdAt.toISOString(),
+      engagement: updated!.engagement
+        ? {
+            likes: updated!.engagement.likes,
+            comments: updated!.engagement.comments,
+            shares: updated!.engagement.shares,
+            reach: updated!.engagement.reach,
+          }
+        : undefined,
+    });
+  } catch (error) {
+    console.error('PUT /api/posts/[id] error:', error);
+    return NextResponse.json({ error: 'Failed to update post' }, { status: 400 });
   }
 }
 
@@ -42,11 +119,19 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  
-  // In a real app, delete from database
-  return NextResponse.json({
-    message: `Deleted post with ID: ${id}`,
-    note: 'Connect to database for actual implementation',
-  });
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    await prisma.post.delete({ where: { id } });
+
+    return NextResponse.json({ message: 'Post deleted' });
+  } catch (error) {
+    console.error('DELETE /api/posts/[id] error:', error);
+    return NextResponse.json({ error: 'Failed to delete post' }, { status: 400 });
+  }
 }

@@ -35,12 +35,12 @@ export default function PostForm() {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Form */}
       <div className="lg:col-span-2">
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-6 space-y-6">
-          <h2 className="text-2xl font-bold text-gray-800">Create New Post</h2>
+        <form onSubmit={handleSubmit} className="bg-[#111118] border border-[#2a2a3a] rounded-lg p-6 space-y-6">
+          <h2 className="text-2xl font-bold text-white">Create New Post</h2>
 
           {/* Title */}
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="title" className="block text-sm font-medium text-gray-400 mb-2">
               Post Title
             </label>
             <input
@@ -51,13 +51,13 @@ export default function PostForm() {
               onChange={handleChange}
               required
               placeholder="Enter post title..."
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-3 rounded-md bg-[#0a0a0f] border border-[#2a2a3a] text-white placeholder-gray-600 focus:ring-1 focus:ring-[#00f0ff] focus:border-[#00f0ff] outline-none transition-all"
             />
           </div>
 
           {/* Platform */}
           <div>
-            <label htmlFor="platform" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="platform" className="block text-sm font-medium text-gray-400 mb-2">
               Platform
             </label>
             <div className="grid grid-cols-3 gap-4">
@@ -69,14 +69,14 @@ export default function PostForm() {
                     key={platform}
                     type="button"
                     onClick={() => setFormData((prev) => ({ ...prev, platform }))}
-                    className={`p-4 rounded-lg border-2 transition-all ${
+                    className={`p-4 rounded-lg border transition-all ${
                       isSelected
-                        ? 'border-orange-500 bg-orange-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-[#00f0ff] bg-[#00f0ff]/10'
+                        : 'border-[#2a2a3a] hover:border-[#3a3a4a] bg-[#0a0a0f]'
                     }`}
                   >
                     <div className="text-2xl mb-1">{strategy.icon}</div>
-                    <div className={`text-sm font-medium ${isSelected ? 'text-orange-600' : 'text-gray-700'}`}>
+                    <div className={`text-sm font-medium ${isSelected ? 'text-[#00f0ff]' : 'text-gray-400'}`}>
                       {platform.charAt(0).toUpperCase() + platform.slice(1)}
                     </div>
                   </button>
@@ -87,7 +87,7 @@ export default function PostForm() {
 
           {/* Date */}
           <div>
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="date" className="block text-sm font-medium text-gray-400 mb-2">
               Schedule Date
             </label>
             <input
@@ -97,13 +97,13 @@ export default function PostForm() {
               value={formData.date}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-3 rounded-md bg-[#0a0a0f] border border-[#2a2a3a] text-white focus:ring-1 focus:ring-[#00f0ff] focus:border-[#00f0ff] outline-none transition-all"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="description" className="block text-sm font-medium text-gray-400 mb-2">
               Post Description
             </label>
             <textarea
@@ -114,19 +114,19 @@ export default function PostForm() {
               required
               rows={4}
               placeholder="Write your post content here..."
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
+              className="w-full px-4 py-3 rounded-md bg-[#0a0a0f] border border-[#2a2a3a] text-white placeholder-gray-600 focus:ring-1 focus:ring-[#00f0ff] focus:border-[#00f0ff] outline-none transition-all resize-none"
             />
             <div className="mt-1 text-sm text-gray-500">
               {formData.description.length} characters
               {formData.platform === 'twitter' && formData.description.length > 280 && (
-                <span className="text-red-500 ml-2">(exceeds Twitter limit)</span>
+                <span className="text-red-400 ml-2">(exceeds Twitter limit)</span>
               )}
             </div>
           </div>
 
           {/* Status */}
           <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="status" className="block text-sm font-medium text-gray-400 mb-2">
               Post Status
             </label>
             <select
@@ -134,7 +134,7 @@ export default function PostForm() {
               name="status"
               value={formData.status}
               onChange={handleChange}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-3 rounded-md bg-[#0a0a0f] border border-[#2a2a3a] text-white focus:ring-1 focus:ring-[#00f0ff] focus:border-[#00f0ff] outline-none transition-all"
             >
               <option value="draft">Draft</option>
               <option value="scheduled">Scheduled</option>
@@ -146,14 +146,14 @@ export default function PostForm() {
           <div className="flex space-x-4">
             <button
               type="submit"
-              className="flex-1 bg-gradient-to-r from-orange-500 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:shadow-lg transition-all"
+              className="flex-1 bg-[#00f0ff] text-black py-3 px-6 rounded-md font-semibold hover:bg-[#00d4e0] transition-colors shadow-[0_0_15px_#00f0ff20]"
             >
               Create Post
             </button>
             <button
               type="button"
               onClick={() => router.push('/')}
-              className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all"
+              className="px-6 py-3 border border-[#2a2a3a] rounded-md text-gray-400 hover:border-gray-500 hover:text-white transition-all"
             >
               Cancel
             </button>

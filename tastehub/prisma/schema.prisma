@@ -1,0 +1,147 @@
+// TasteHub Database Schema
+// Covers: Users, Posts, Engagement, Calendar Events, ML Insights
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ─── Users & Auth ────────────────────────────────────────────
+model User {
+  id             String    @id @default(cuid())
+  name           String
+  email          String    @unique
+  password       String // bcrypt hash
+  image          String?
+  bio            String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  posts          Post[]
+  calendarEvents CalendarEvent[]
+  mlInsights     MLInsight[]
+  accounts       Account[] // for OAuth providers
+}
+
+// OAuth / social accounts linked to a user
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  provider          String // "google", "github", "credentials"
+  providerAccountId String
+  type              String  @default("oauth")
+  accessToken       String?
+  refreshToken      String?
+  expiresAt         Int?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+// ─── Posts ────────────────────────────────────────────────────
+model Post {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String
+  platform    String // "instagram" | "facebook" | "twitter"
+  date        String // scheduled date ISO e.g. "2026-02-15"
+  status      String   @default("draft") // "draft" | "scheduled" | "published"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  engagement  Engagement?
+  topComments TopComment[]
+  mlInsights  MLInsight[]
+}
+
+// ─── Engagement Metrics ──────────────────────────────────────
+model Engagement {
+  id       String @id @default(cuid())
+  postId   String @unique
+  likes    Int    @default(0)
+  comments Int    @default(0)
+  shares   Int    @default(0)
+  reach    Int    @default(0)
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+// ─── Top Comments (ML input) ─────────────────────────────────
+// Stores up to 5 notable comments per post for ML analysis
+model TopComment {
+  id        String   @id @default(cuid())
+  postId    String
+  rank      Int // 1-5 ranking
+  author    String?
+  body      String
+  likes     Int      @default(0)
+  sentiment String?  // "positive" | "negative" | "neutral"
+  createdAt DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, rank])
+}
+
+// ─── ML Insight (model output) ───────────────────────────────
+// Stores the ML model's recommendation for a given post/user
+model MLInsight {
+  id              String   @id @default(cuid())
+  userId          String
+  postId          String?  // null = user-level insight, non-null = post-level
+  // Input snapshot (what was fed to the model)
+  inputLikes      Int
+  inputComments   Int
+  inputShares     Int
+  inputReach      Int
+  inputTopComments String? // JSON array of top 5 comment texts
+  // Output
+  summary         String  // main recommendation text
+  actionItems     String? // JSON array of specific action items
+  confidence      Float?  // 0-1 confidence score
+  modelVersion    String? // track which model version produced this
+  createdAt       DateTime @default(now())
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post? @relation(fields: [postId], references: [id], onDelete: SetNull)
+}
+
+// ─── Calendar Events ─────────────────────────────────────────
+// Standalone calendar entries (beyond post scheduled dates)
+model CalendarEvent {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  date        String   // ISO date "2026-02-15"
+  time        String?  // optional time "14:30"
+  type        String   @default("reminder") // "reminder" | "deadline" | "meeting" | "campaign"
+  color       String?  // hex color for calendar display
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Platform Analytics Snapshot ─────────────────────────────
+// Periodic snapshots of aggregated platform-level stats
+model PlatformSnapshot {
+  id            String   @id @default(cuid())
+  platform      String // "instagram" | "facebook" | "twitter"
+  totalPosts    Int      @default(0)
+  totalLikes    Int      @default(0)
+  totalComments Int      @default(0)
+  totalShares   Int      @default(0)
+  totalReach    Int      @default(0)
+  snapshotDate  String   // ISO date of the snapshot
+  createdAt     DateTime @default(now())
+
+  @@unique([platform, snapshotDate])
+}

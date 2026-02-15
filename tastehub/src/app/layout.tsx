@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { PostProvider } from "@/context/PostContext";
-import { Navbar } from "@/components";
+import AuthProvider from "@/components/AuthProvider";
+import AppShell from "@/components/AppShell";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -19,14 +20,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} bg-gray-50 min-h-screen`}>
-        <PostProvider>
-          <Navbar />
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {children}
-          </main>
-        </PostProvider>
+    <html lang="en" className="dark">
+      <body className={`${inter.className} bg-[#0a0a0f] text-gray-200 min-h-screen`}>
+        <AuthProvider>
+          <PostProvider>
+            <AppShell>{children}</AppShell>
+          </PostProvider>
+        </AuthProvider>
       </body>
     </html>
   );

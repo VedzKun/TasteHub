@@ -1,68 +1,113 @@
 import { NextRequest, NextResponse } from 'next/server';
+import prisma from '@/lib/db';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import type { Post, Engagement } from '@/generated/prisma/client';
+
+type PostWithEngagement = Post & { engagement: Engagement | null };
 
 export async function GET() {
-  // Sample analytics data
-  // In production, calculate from database
-  const analytics = {
-    overview: {
-      totalPosts: 15,
-      scheduledPosts: 8,
-      publishedPosts: 5,
-      draftPosts: 2,
-    },
-    engagement: {
-      totalLikes: 1520,
-      totalComments: 245,
-      totalShares: 89,
-      totalReach: 12500,
-    },
-    platformBreakdown: {
-      instagram: {
-        posts: 6,
-        likes: 890,
-        comments: 156,
-        shares: 45,
-        reach: 7200,
-      },
-      facebook: {
-        posts: 5,
-        likes: 420,
-        comments: 67,
-        shares: 34,
-        reach: 3800,
-      },
-      twitter: {
-        posts: 4,
-        likes: 210,
-        comments: 22,
-        shares: 10,
-        reach: 1500,
-      },
-    },
-    topPerformingPosts: [
-      { id: '1', title: 'New Recipe Launch', engagement: 295, platform: 'instagram' },
-      { id: '5', title: 'Behind the Scenes', engagement: 187, platform: 'instagram' },
-      { id: '3', title: 'Weekend Special', engagement: 156, platform: 'facebook' },
-    ],
-  };
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-  return NextResponse.json(analytics);
+    const userId = session.user.id;
+
+    // Aggregate post counts by status
+    const posts = await prisma.post.findMany({
+      where: { userId },
+      include: { engagement: true },
+    });
+
+    const overview = {
+      totalPosts: posts.length,
+      scheduledPosts: posts.filter((p: PostWithEngagement) => p.status === 'scheduled').length,
+      publishedPosts: posts.filter((p: PostWithEngagement) => p.status === 'published').length,
+      draftPosts: posts.filter((p: PostWithEngagement) => p.status === 'draft').length,
+    };
+
+    // Aggregate engagement
+    const engagement = posts.reduce(
+      (acc: { totalLikes: number; totalComments: number; totalShares: number; totalReach: number }, p: PostWithEngagement) => {
+        if (p.engagement) {
+          acc.totalLikes += p.engagement.likes;
+          acc.totalComments += p.engagement.comments;
+          acc.totalShares += p.engagement.shares;
+          acc.totalReach += p.engagement.reach;
+        }
+        return acc;
+      },
+      { totalLikes: 0, totalComments: 0, totalShares: 0, totalReach: 0 }
+    );
+
+    // Platform breakdown
+    const platforms = ['instagram', 'facebook', 'twitter'] as const;
+    const platformBreakdown: Record<string, { posts: number; likes: number; comments: number; shares: number; reach: number }> = {};
+    for (const platform of platforms) {
+      const pPosts = posts.filter((p: PostWithEngagement) => p.platform === platform);
+      platformBreakdown[platform] = pPosts.reduce(
+        (acc: { posts: number; likes: number; comments: number; shares: number; reach: number }, p: PostWithEngagement) => {
+          acc.posts++;
+          if (p.engagement) {
+            acc.likes += p.engagement.likes;
+            acc.comments += p.engagement.comments;
+            acc.shares += p.engagement.shares;
+            acc.reach += p.engagement.reach;
+          }
+          return acc;
+        },
+        { posts: 0, likes: 0, comments: 0, shares: 0, reach: 0 }
+      );
+    }
+
+    // Top performing posts
+    const topPerformingPosts = posts
+      .filter((p: PostWithEngagement) => p.engagement)
+      .map((p: PostWithEngagement) => ({
+        id: p.id,
+        title: p.title,
+        engagement: (p.engagement!.likes + p.engagement!.comments + p.engagement!.shares),
+        platform: p.platform,
+      }))
+      .sort((a: { engagement: number }, b: { engagement: number }) => b.engagement - a.engagement)
+      .slice(0, 5);
+
+    return NextResponse.json({
+      overview,
+      engagement,
+      platformBreakdown,
+      topPerformingPosts,
+    });
+  } catch (error) {
+    console.error('GET /api/analytics error:', error);
+    return NextResponse.json({ error: 'Failed to fetch analytics' }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { postId, engagement } = body;
 
-    // In production, update the database
+    const updated = await prisma.engagement.upsert({
+      where: { postId },
+      update: engagement,
+      create: { postId, ...engagement },
+    });
+
     return NextResponse.json({
       message: `Updated engagement for post ${postId}`,
-      engagement,
+      engagement: updated,
     });
-  } catch {
-    return NextResponse.json(
-      { error: 'Failed to update analytics' },
-      { status: 400 }
-    );
+  } catch (error) {
+    console.error('POST /api/analytics error:', error);
+    return NextResponse.json({ error: 'Failed to update analytics' }, { status: 400 });
   }
 }

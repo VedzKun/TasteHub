@@ -75,10 +75,10 @@ export default function AnalyticsDashboard() {
 
   const getPlatformColor = (platform: string) => {
     switch (platform) {
-      case 'instagram': return 'from-pink-500 to-purple-500';
-      case 'facebook': return 'from-blue-600 to-blue-700';
-      case 'twitter': return 'from-sky-400 to-sky-500';
-      default: return 'from-gray-400 to-gray-500';
+      case 'instagram': return 'border-pink-500';
+      case 'facebook': return 'border-blue-500';
+      case 'twitter': return 'border-sky-400';
+      default: return 'border-gray-500';
     }
   };
 
@@ -86,26 +86,26 @@ export default function AnalyticsDashboard() {
     <div className="space-y-8">
       {/* Overview Cards */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Performance Overview</h2>
+        <h2 className="text-2xl font-bold text-white mb-4">Performance Overview</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="bg-[#111118] border border-[#2a2a3a] rounded-lg p-6">
             <div className="text-3xl mb-2">❤️</div>
-            <div className="text-3xl font-bold text-gray-800">{totals.likes.toLocaleString()}</div>
+            <div className="text-3xl font-bold text-[#00f0ff] font-mono">{totals.likes.toLocaleString()}</div>
             <div className="text-sm text-gray-500">Total Likes</div>
           </div>
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="bg-[#111118] border border-[#2a2a3a] rounded-lg p-6">
             <div className="text-3xl mb-2">💬</div>
-            <div className="text-3xl font-bold text-gray-800">{totals.comments.toLocaleString()}</div>
+            <div className="text-3xl font-bold text-[#ff00e5] font-mono">{totals.comments.toLocaleString()}</div>
             <div className="text-sm text-gray-500">Total Comments</div>
           </div>
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="bg-[#111118] border border-[#2a2a3a] rounded-lg p-6">
             <div className="text-3xl mb-2">🔄</div>
-            <div className="text-3xl font-bold text-gray-800">{totals.shares.toLocaleString()}</div>
+            <div className="text-3xl font-bold text-[#00ff88] font-mono">{totals.shares.toLocaleString()}</div>
             <div className="text-sm text-gray-500">Total Shares</div>
           </div>
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="bg-[#111118] border border-[#2a2a3a] rounded-lg p-6">
             <div className="text-3xl mb-2">👁️</div>
-            <div className="text-3xl font-bold text-gray-800">{totals.reach.toLocaleString()}</div>
+            <div className="text-3xl font-bold text-[#ff8800] font-mono">{totals.reach.toLocaleString()}</div>
             <div className="text-sm text-gray-500">Total Reach</div>
           </div>
         </div>
@@ -113,34 +113,34 @@ export default function AnalyticsDashboard() {
 
       {/* Platform Breakdown */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Platform Performance</h2>
+        <h2 className="text-2xl font-bold text-white mb-4">Platform Performance</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {platformStats.map(({ platform, likes, comments, shares, reach, count }) => (
             <div
               key={platform}
-              className={`bg-gradient-to-r ${getPlatformColor(platform)} rounded-xl shadow-sm p-6 text-white`}
+              className={`bg-[#111118] border-l-4 ${getPlatformColor(platform)} border border-[#2a2a3a] rounded-lg p-6`}
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="text-3xl">{getPlatformIcon(platform)}</div>
-                <div className="text-sm opacity-80">{count} posts</div>
+                <div className="text-sm text-gray-500">{count} posts</div>
               </div>
-              <h3 className="text-lg font-bold mb-3 capitalize">{platform}</h3>
+              <h3 className="text-lg font-bold text-white mb-3 capitalize">{platform}</h3>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <div className="font-bold">{likes}</div>
-                  <div className="opacity-80">Likes</div>
+                  <div className="font-bold text-[#00f0ff] font-mono">{likes}</div>
+                  <div className="text-gray-500">Likes</div>
                 </div>
                 <div>
-                  <div className="font-bold">{comments}</div>
-                  <div className="opacity-80">Comments</div>
+                  <div className="font-bold text-[#ff00e5] font-mono">{comments}</div>
+                  <div className="text-gray-500">Comments</div>
                 </div>
                 <div>
-                  <div className="font-bold">{shares}</div>
-                  <div className="opacity-80">Shares</div>
+                  <div className="font-bold text-[#00ff88] font-mono">{shares}</div>
+                  <div className="text-gray-500">Shares</div>
                 </div>
                 <div>
-                  <div className="font-bold">{reach}</div>
-                  <div className="opacity-80">Reach</div>
+                  <div className="font-bold text-[#ff8800] font-mono">{reach}</div>
+                  <div className="text-gray-500">Reach</div>
                 </div>
               </div>
             </div>
@@ -151,14 +151,14 @@ export default function AnalyticsDashboard() {
       {/* Posts List with Filter */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-gray-800">Post Analytics</h2>
+          <h2 className="text-2xl font-bold text-white">Post Analytics</h2>
           <div className="flex space-x-2">
             <button
               onClick={() => setSelectedPlatform('all')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 selectedPlatform === 'all'
-                  ? 'bg-orange-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-[#00f0ff] text-black'
+                  : 'bg-[#1a1a2e] text-gray-400 hover:text-white border border-[#2a2a3a]'
               }`}
             >
               All
@@ -167,10 +167,10 @@ export default function AnalyticsDashboard() {
               <button
                 key={platform}
                 onClick={() => setSelectedPlatform(platform)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
                   selectedPlatform === platform
-                    ? 'bg-orange-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-[#00f0ff] text-black'
+                    : 'bg-[#1a1a2e] text-gray-400 hover:text-white border border-[#2a2a3a]'
                 }`}
               >
                 {getPlatformIcon(platform)}
@@ -180,7 +180,7 @@ export default function AnalyticsDashboard() {
         </div>
 
         {filteredPosts.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+          <div className="bg-[#111118] border border-[#2a2a3a] rounded-lg p-12 text-center">
             <div className="text-4xl mb-4">📭</div>
             <p className="text-gray-500">No posts found. Create your first post!</p>
           </div>
@@ -191,7 +191,7 @@ export default function AnalyticsDashboard() {
                 <PostCard post={post} showEngagement={true} />
                 <button
                   onClick={() => handleEditEngagement(post.id, post.engagement)}
-                  className="absolute top-4 right-16 text-sm text-orange-500 hover:text-orange-600"
+                  className="absolute top-4 right-16 text-sm text-[#00f0ff] hover:text-[#00d4e0]"
                 >
                   ✏️ Edit Metrics
                 </button>
@@ -203,57 +203,57 @@ export default function AnalyticsDashboard() {
 
       {/* Edit Engagement Modal */}
       {editingPostId && (
-        <div className="fixed inset-0  bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Update Engagement Metrics</h3>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-[#111118] border border-[#2a2a3a] rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-bold text-white mb-4">Update Engagement Metrics</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Likes</label>
+                <label className="block text-sm font-medium text-gray-400 mb-1">Likes</label>
                 <input
                   type="number"
                   value={engagementForm.likes}
                   onChange={(e) => setEngagementForm((prev) => ({ ...prev, likes: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500"
+                  className="w-full px-4 py-2 rounded-md bg-[#0a0a0f] border border-[#2a2a3a] text-white focus:ring-1 focus:ring-[#00f0ff] outline-none"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Comments</label>
+                <label className="block text-sm font-medium text-gray-400 mb-1">Comments</label>
                 <input
                   type="number"
                   value={engagementForm.comments}
                   onChange={(e) => setEngagementForm((prev) => ({ ...prev, comments: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500"
+                  className="w-full px-4 py-2 rounded-md bg-[#0a0a0f] border border-[#2a2a3a] text-white focus:ring-1 focus:ring-[#00f0ff] outline-none"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Shares</label>
+                <label className="block text-sm font-medium text-gray-400 mb-1">Shares</label>
                 <input
                   type="number"
                   value={engagementForm.shares}
                   onChange={(e) => setEngagementForm((prev) => ({ ...prev, shares: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500"
+                  className="w-full px-4 py-2 rounded-md bg-[#0a0a0f] border border-[#2a2a3a] text-white focus:ring-1 focus:ring-[#00f0ff] outline-none"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reach</label>
+                <label className="block text-sm font-medium text-gray-400 mb-1">Reach</label>
                 <input
                   type="number"
                   value={engagementForm.reach}
                   onChange={(e) => setEngagementForm((prev) => ({ ...prev, reach: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500"
+                  className="w-full px-4 py-2 rounded-md bg-[#0a0a0f] border border-[#2a2a3a] text-white focus:ring-1 focus:ring-[#00f0ff] outline-none"
                 />
               </div>
             </div>
             <div className="flex space-x-4 mt-6">
               <button
                 onClick={handleSaveEngagement}
-                className="flex-1 bg-orange-500 text-white py-2 rounded-lg font-medium hover:bg-orange-600"
+                className="flex-1 bg-[#00f0ff] text-black py-2 rounded-md font-semibold hover:bg-[#00d4e0]"
               >
                 Save
               </button>
               <button
                 onClick={() => setEditingPostId(null)}
-                className="flex-1 border border-gray-300 py-2 rounded-lg text-gray-700 hover:bg-gray-50"
+                className="flex-1 border border-[#2a2a3a] py-2 rounded-md text-gray-400 hover:border-gray-500 hover:text-white"
               >
                 Cancel
               </button>

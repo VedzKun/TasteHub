@@ -26,10 +26,10 @@ export default function PostCard({ post, showEngagement = true }: PostCardProps)
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'draft': return 'bg-yellow-100 text-yellow-800';
-      case 'scheduled': return 'bg-blue-100 text-blue-800';
-      case 'published': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'draft': return 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30';
+      case 'scheduled': return 'bg-blue-500/10 text-blue-400 border border-blue-500/30';
+      case 'published': return 'bg-green-500/10 text-green-400 border border-green-500/30';
+      default: return 'bg-gray-500/10 text-gray-400 border border-gray-500/30';
     }
   };
 
@@ -40,17 +40,17 @@ export default function PostCard({ post, showEngagement = true }: PostCardProps)
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
+    <div className="bg-[#111118] rounded-lg border border-[#2a2a3a] p-5 hover:border-[#3a3a4a] transition-colors">
       <div className="flex items-start justify-between">
         <div className="flex items-center space-x-3">
           <div className={`w-10 h-10 ${platformInfo.color} rounded-full flex items-center justify-center text-lg`}>
             {platformInfo.icon}
           </div>
           <div>
-            <h3 className="font-semibold text-gray-800">{post.title}</h3>
+            <h3 className="font-semibold text-white">{post.title}</h3>
             <div className="flex items-center space-x-2 mt-1">
               <span className="text-xs text-gray-500">{platformInfo.label}</span>
-              <span className="text-gray-300">•</span>
+              <span className="text-gray-600">•</span>
               <span className="text-xs text-gray-500">
                 {new Date(post.date + 'T00:00:00').toLocaleDateString('en-US', {
                   month: 'short',
@@ -64,7 +64,7 @@ export default function PostCard({ post, showEngagement = true }: PostCardProps)
           <select
             value={post.status}
             onChange={(e) => handleStatusChange(e.target.value as 'draft' | 'scheduled' | 'published')}
-            className={`text-xs px-2 py-1 rounded-full font-medium cursor-pointer ${getStatusColor(post.status)}`}
+            className={`text-xs px-2 py-1 rounded-full font-medium cursor-pointer bg-[#0a0a0f] ${getStatusColor(post.status)}`}
           >
             <option value="draft">Draft</option>
             <option value="scheduled">Scheduled</option>
@@ -72,7 +72,7 @@ export default function PostCard({ post, showEngagement = true }: PostCardProps)
           </select>
           <button
             onClick={() => deletePost(post.id)}
-            className="text-gray-400 hover:text-red-500 transition-colors"
+            className="text-gray-500 hover:text-red-400 transition-colors"
             title="Delete post"
           >
             🗑️
@@ -80,25 +80,25 @@ export default function PostCard({ post, showEngagement = true }: PostCardProps)
         </div>
       </div>
 
-      <p className="mt-3 text-sm text-gray-600 line-clamp-2">{post.description}</p>
+      <p className="mt-3 text-sm text-gray-400 line-clamp-2">{post.description}</p>
 
       {showEngagement && post.engagement && (
-        <div className="mt-4 pt-4 border-t border-gray-100">
+        <div className="mt-4 pt-4 border-t border-[#2a2a3a]">
           <div className="grid grid-cols-4 gap-2">
             <div className="text-center">
-              <div className="text-lg font-bold text-gray-800">{post.engagement.likes}</div>
+              <div className="text-lg font-bold text-[#00f0ff] font-mono">{post.engagement.likes}</div>
               <div className="text-xs text-gray-500">Likes</div>
             </div>
             <div className="text-center">
-              <div className="text-lg font-bold text-gray-800">{post.engagement.comments}</div>
+              <div className="text-lg font-bold text-[#ff00e5] font-mono">{post.engagement.comments}</div>
               <div className="text-xs text-gray-500">Comments</div>
             </div>
             <div className="text-center">
-              <div className="text-lg font-bold text-gray-800">{post.engagement.shares}</div>
+              <div className="text-lg font-bold text-[#00ff88] font-mono">{post.engagement.shares}</div>
               <div className="text-xs text-gray-500">Shares</div>
             </div>
             <div className="text-center">
-              <div className="text-lg font-bold text-gray-800">{post.engagement.reach}</div>
+              <div className="text-lg font-bold text-[#ff8800] font-mono">{post.engagement.reach}</div>
               <div className="text-xs text-gray-500">Reach</div>
             </div>
           </div>

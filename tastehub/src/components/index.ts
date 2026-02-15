@@ -1,6 +1,9 @@
-export { default as Navbar } from './Navbar';
+export { default as Sidebar } from './Sidebar';
+export { default as AppShell } from './AppShell';
+export { default as TopBar } from './TopBar';
 export { default as Calendar } from './Calendar';
 export { default as PostCard } from './PostCard';
 export { default as PostForm } from './PostForm';
 export { default as PlatformSuggestions } from './PlatformSuggestions';
 export { default as AnalyticsDashboard } from './AnalyticsDashboard';
+export { default as AuthProvider } from './AuthProvider';

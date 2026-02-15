@@ -49,7 +49,7 @@ export default function Calendar() {
       case 'instagram': return 'bg-pink-500';
       case 'facebook': return 'bg-blue-600';
       case 'twitter': return 'bg-sky-400';
-      default: return 'bg-gray-400';
+      default: return 'bg-gray-600';
     }
   };
 
@@ -58,7 +58,7 @@ export default function Calendar() {
 
     // Empty cells for days before the first day of the month
     for (let i = 0; i < startingDayOfWeek; i++) {
-      days.push(<div key={`empty-${i}`} className="h-24 bg-gray-50"></div>);
+      days.push(<div key={`empty-${i}`} className="h-24 bg-[#0a0a0f]"></div>);
     }
 
     // Days of the month
@@ -72,11 +72,11 @@ export default function Calendar() {
         <div
           key={day}
           onClick={() => setSelectedDate(isSelected ? null : dateStr)}
-          className={`h-24 p-2 border border-gray-200 cursor-pointer transition-all duration-200 hover:bg-orange-50 ${
-            isToday ? 'bg-orange-100 border-orange-400' : 'bg-white'
-          } ${isSelected ? 'ring-2 ring-orange-500' : ''}`}
+          className={`h-24 p-2 border border-[#2a2a3a] cursor-pointer transition-all duration-200 hover:bg-[#1a1a2e] ${
+            isToday ? 'bg-[#1a1a2e] border-[#00f0ff]' : 'bg-[#111118]'
+          } ${isSelected ? 'ring-1 ring-[#00f0ff]' : ''}`}
         >
-          <div className={`text-sm font-medium ${isToday ? 'text-orange-600' : 'text-gray-700'}`}>
+          <div className={`text-sm font-medium ${isToday ? 'text-[#00f0ff]' : 'text-gray-300'}`}>
             {day}
           </div>
           <div className="mt-1 space-y-1 overflow-hidden">
@@ -106,30 +106,30 @@ export default function Calendar() {
   return (
     <div className="space-y-6">
       {/* Calendar Header */}
-      <div className="flex items-center justify-between bg-white rounded-xl shadow-sm p-4">
+      <div className="flex items-center justify-between bg-[#111118] border border-[#2a2a3a] rounded-lg p-4">
         <button
           onClick={prevMonth}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="px-3 py-1.5 text-sm text-gray-400 hover:text-white hover:bg-[#1a1a2e] rounded transition-colors"
         >
-          ← Previous
+          ← Prev
         </button>
-        <h2 className="text-xl font-bold text-gray-800">
+        <h2 className="text-lg font-bold text-white">
           {monthNames[month]} {year}
         </h2>
         <button
           onClick={nextMonth}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="px-3 py-1.5 text-sm text-gray-400 hover:text-white hover:bg-[#1a1a2e] rounded transition-colors"
         >
           Next →
         </button>
       </div>
 
       {/* Calendar Grid */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-[#111118] border border-[#2a2a3a] rounded-lg overflow-hidden">
         {/* Day Headers */}
-        <div className="grid grid-cols-7 bg-gradient-to-r from-orange-500 to-pink-500">
+        <div className="grid grid-cols-7 bg-[#1a1a2e] border-b border-[#2a2a3a]">
           {dayNames.map((day) => (
-            <div key={day} className="py-3 text-center text-white font-medium text-sm">
+            <div key={day} className="py-3 text-center text-gray-400 font-medium text-sm">
               {day}
             </div>
           ))}
@@ -143,8 +143,8 @@ export default function Calendar() {
 
       {/* Selected Date Posts */}
       {selectedDate && (
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h3 className="text-lg font-bold text-gray-800 mb-4">
+        <div className="bg-[#111118] border border-[#2a2a3a] rounded-lg p-6">
+          <h3 className="text-lg font-bold text-white mb-4">
             Posts for {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', {
               weekday: 'long',
               year: 'numeric',
@@ -165,20 +165,20 @@ export default function Calendar() {
       )}
 
       {/* Legend */}
-      <div className="bg-white rounded-xl shadow-sm p-4">
-        <h4 className="text-sm font-medium text-gray-700 mb-2">Platform Legend</h4>
+      <div className="bg-[#111118] border border-[#2a2a3a] rounded-lg p-4">
+        <h4 className="text-sm font-medium text-gray-400 mb-2">Platform Legend</h4>
         <div className="flex space-x-4">
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 rounded-full bg-pink-500"></div>
-            <span className="text-sm text-gray-600">Instagram</span>
+            <span className="text-sm text-gray-400">Instagram</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 rounded-full bg-blue-600"></div>
-            <span className="text-sm text-gray-600">Facebook</span>
+            <span className="text-sm text-gray-400">Facebook</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 rounded-full bg-sky-400"></div>
-            <span className="text-sm text-gray-600">Twitter</span>
+            <span className="text-sm text-gray-400">Twitter</span>
           </div>
         </div>
       </div>
